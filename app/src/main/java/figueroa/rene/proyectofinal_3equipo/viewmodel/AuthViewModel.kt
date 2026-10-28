@@ -6,10 +6,6 @@ import androidx.compose.runtime.setValue
 import figueroa.rene.proyectofinal_3equipo.model.AuthDestination
 import figueroa.rene.proyectofinal_3equipo.model.AuthUiState
 
-/**
- * Controla el estado y las validaciones del flujo de autenticación local.
- * No autentica usuarios reales ni envía correos.
- */
 class AuthViewModel {
     var uiState by mutableStateOf(AuthUiState())
         private set
@@ -22,7 +18,7 @@ class AuthViewModel {
         uiState = uiState.copy(loginPassword = value, loginError = false)
     }
 
-    fun login() {
+    fun login(): Boolean {
         val valid = uiState.loginEmail.trim().equals("paciente@correo.com", ignoreCase = true) &&
             uiState.loginPassword == "DrCall123"
 
@@ -35,6 +31,7 @@ class AuthViewModel {
         } else {
             uiState.copy(loginError = true)
         }
+        return valid
     }
 
     fun openForgotPassword() {
@@ -43,21 +40,30 @@ class AuthViewModel {
             resetEmail = uiState.loginEmail,
             notice = ""
         )
+
     }
 
     fun updateResetEmail(value: String) {
         uiState = uiState.copy(resetEmail = value, notice = "")
     }
 
-    fun sendResetEmail() {
+
+    fun sendResetEmail(): Boolean {
         val email = uiState.resetEmail.trim()
-        val validEmail = email.contains("@") && email.substringAfter("@").contains(".")
-        uiState = if (validEmail) {
-            uiState.copy(destination = AuthDestination.EMAIL_SENT, notice = "")
+        val validEmail = email.contains("@") &&
+                email.substringAfter("@").contains(".")
+
+        return if (validEmail) {
+            uiState = uiState.copy(notice = "")
+            true
         } else {
-            uiState.copy(notice = "Escribe un correo electrónico válido.")
+            uiState = uiState.copy(
+                notice = "Escribe un correo electrónico válido."
+            )
+            false
         }
     }
+
 
     fun simulateResendEmail() {
         uiState = uiState.copy(notice = "Correo de demostración reenviado.")
@@ -80,7 +86,7 @@ class AuthViewModel {
         uiState = uiState.copy(confirmPassword = value, notice = "")
     }
 
-    fun saveNewPassword() {
+    fun saveNewPassword(): Boolean {
         val message = when {
             uiState.newPassword.length < 8 -> "Usa al menos 8 caracteres."
             uiState.newPassword.none { it.isUpperCase() } -> "Incluye al menos una mayúscula."
@@ -88,6 +94,8 @@ class AuthViewModel {
             uiState.newPassword != uiState.confirmPassword -> "Las contraseñas no coinciden."
             else -> "Contraseña actualizada en la demostración."
         }
+
+        val success = message.startsWith("Contraseña actualizada")
 
         uiState = if (message.startsWith("Contraseña actualizada")) {
             uiState.copy(
@@ -99,6 +107,7 @@ class AuthViewModel {
         } else {
             uiState.copy(notice = message)
         }
+        return success
     }
 
     fun openRegister() {

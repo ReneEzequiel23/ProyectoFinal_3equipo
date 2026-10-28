@@ -10,7 +10,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,22 +37,6 @@ fun DrCallNavHost() {
     val navController = rememberNavController()
     val viewModel = remember { AuthViewModel() }
     val state = viewModel.uiState
-
-    LaunchedEffect(state.destination) {
-        val route = when (state.destination) {
-            AuthDestination.LOGIN -> Login
-            AuthDestination.FORGOT_PASSWORD -> ForgotPassword
-            AuthDestination.EMAIL_SENT -> EmailSent
-            AuthDestination.NEW_PASSWORD -> NewPassword
-            AuthDestination.REGISTER -> Register
-            AuthDestination.HOME -> Home
-        }
-
-        navController.navigate(route) {
-            popUpTo(navController.graph.startDestinationId)
-            launchSingleTop = true
-        }
-    }
 
     ProyectoFinal_3equipoTheme {
         Surface(
@@ -125,7 +108,36 @@ private fun DrCallNavigationGraph(
     viewModel: AuthViewModel
 ) {
     val state = viewModel.uiState
+    val goToLogin = {
+        navController.navigate(Login) {
+            popUpTo<Login> {
+                inclusive = false
+            }
+            launchSingleTop = true
+        }
+    }
 
+    val goToForgotPassword = {
+        navController.navigate(ForgotPassword)}
+
+    val goToRegister = {
+        navController.navigate(Register)}
+
+    val goToEmailSent = {
+        navController.navigate(EmailSent)}
+
+    val goToNewPassword = {
+        navController.navigate(NewPassword)}
+
+    val goToHome = {
+        navController.navigate(Home) {
+            popUpTo<Login> {
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
+
+    }
     NavHost(
         navController = navController,
         startDestination = Login
@@ -137,9 +149,19 @@ private fun DrCallNavigationGraph(
                 password = state.loginPassword,
                 onPasswordChange = viewModel::updateLoginPassword,
                 showError = state.loginError,
-                onLogin = viewModel::login,
-                onForgotPassword = viewModel::openForgotPassword,
-                onRegister = viewModel::openRegister,
+                onLogin = {
+                    if (viewModel.login()) {
+                        goToHome()
+                    }
+                },
+                onForgotPassword = {
+                    viewModel.openForgotPassword()
+                    goToForgotPassword()
+                },
+                onRegister = {
+                    viewModel.openRegister()
+                    goToRegister()
+                },
                 onBiometric = viewModel::showBiometricDialog
             )
         }
@@ -148,8 +170,15 @@ private fun DrCallNavigationGraph(
             ForgotPasswordScreen(
                 email = state.resetEmail,
                 onEmailChange = viewModel::updateResetEmail,
-                onBack = viewModel::backToLogin,
-                onSend = viewModel::sendResetEmail,
+                onBack = {
+                    viewModel.backToLogin()
+                    goToLogin()
+                },
+                onSend = {
+                    if (viewModel.sendResetEmail()) {
+                        goToEmailSent()
+                    }
+                },
                 notice = state.notice
             )
         }
@@ -158,8 +187,10 @@ private fun DrCallNavigationGraph(
             EmailSentScreen(
                 email = state.resetEmail,
                 onBackToLogin = viewModel::backToLogin,
-                onContinueToNewPassword =
-                    viewModel::simulateOpenResetLink,
+                onContinueToNewPassword = {
+                    viewModel.simulateOpenResetLink()
+                    goToNewPassword()
+                },
                 onResend = viewModel::simulateResendEmail,
                 notice = state.notice
             )
@@ -172,8 +203,15 @@ private fun DrCallNavigationGraph(
                 confirmation = state.confirmPassword,
                 onConfirmationChange =
                     viewModel::updateConfirmPassword,
-                onSave = viewModel::saveNewPassword,
-                onBack = viewModel::backToLogin,
+                onSave = {
+                    if (viewModel.saveNewPassword()) {
+                        goToLogin()
+                    }
+                },
+                onBack = {
+                    viewModel.backToLogin()
+                    goToLogin()
+                },
                 notice = state.notice
             )
         }
@@ -182,7 +220,10 @@ private fun DrCallNavigationGraph(
             RegisterScreen(
                 isDoctor = state.registerAsDoctor,
                 onRoleChange = viewModel::updateRegisterRole,
-                onBack = viewModel::backToLogin,
+                onBack = {
+                    viewModel.backToLogin()
+                    goToLogin()
+                },
                 onCreate = viewModel::simulateCreateAccount,
                 notice = state.notice
             )
@@ -191,7 +232,10 @@ private fun DrCallNavigationGraph(
         composable<Home> {
             DemoHomeScreen(
                 email = state.loginEmail,
-                onLogout = viewModel::logout
+                onLogout = {
+                    viewModel.logout()
+                    goToLogin()
+                }
             )
         }
     }
