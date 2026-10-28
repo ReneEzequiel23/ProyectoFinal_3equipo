@@ -154,8 +154,7 @@ fun LoginScreen(
 }
 
 @Preview(
-    showBackground = true,
-    showSystemUi = true
+    showBackground = true
 )
 @Composable
 private fun LoginScreenPreview() {
