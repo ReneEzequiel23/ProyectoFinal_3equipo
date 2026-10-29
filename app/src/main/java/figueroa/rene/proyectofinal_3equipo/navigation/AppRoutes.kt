@@ -20,3 +20,6 @@ object Register
 
 @Serializable
 object Home
+
+@Serializable
+object PatientHome

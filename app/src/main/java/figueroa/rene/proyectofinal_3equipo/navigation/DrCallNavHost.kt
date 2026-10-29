@@ -31,6 +31,7 @@ import figueroa.rene.proyectofinal_3equipo.view.recovery.ForgotPasswordScreen
 import figueroa.rene.proyectofinal_3equipo.view.recovery.NewPasswordScreen
 import figueroa.rene.proyectofinal_3equipo.view.register.RegisterScreen
 import figueroa.rene.proyectofinal_3equipo.viewmodel.AuthViewModel
+import figueroa.rene.proyectofinal_3equipo.view.patient.PatientHomeScreen
 
 @Composable
 fun DrCallNavHost() {
@@ -129,15 +130,15 @@ private fun DrCallNavigationGraph(
     val goToNewPassword = {
         navController.navigate(NewPassword)}
 
-    val goToHome = {
-        navController.navigate(Home) {
+    val goToPatientHome = {
+        navController.navigate(PatientHome) {
             popUpTo<Login> {
                 inclusive = true
             }
             launchSingleTop = true
         }
-
     }
+
     NavHost(
         navController = navController,
         startDestination = Login
@@ -151,7 +152,7 @@ private fun DrCallNavigationGraph(
                 showError = state.loginError,
                 onLogin = {
                     if (viewModel.login()) {
-                        goToHome()
+                        goToPatientHome()
                     }
                 },
                 onForgotPassword = {
@@ -235,6 +236,22 @@ private fun DrCallNavigationGraph(
                 onLogout = {
                     viewModel.logout()
                     goToLogin()
+                }
+            )
+        }
+
+        composable<PatientHome> {
+            PatientHomeScreen(
+                patientName = "María",
+                onProfile = {
+                },
+                onScheduleAppointment = {
+                },
+                onHistory = {
+                },
+                onAppointmentDetails = { doctor ->
+                },
+                onRateDoctor = { doctor ->
                 }
             )
         }
