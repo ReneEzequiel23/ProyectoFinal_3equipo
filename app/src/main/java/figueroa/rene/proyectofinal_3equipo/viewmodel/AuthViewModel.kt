@@ -3,7 +3,6 @@ package figueroa.rene.proyectofinal_3equipo.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import figueroa.rene.proyectofinal_3equipo.model.AuthDestination
 import figueroa.rene.proyectofinal_3equipo.model.AuthUiState
 
 class AuthViewModel {
@@ -24,7 +23,6 @@ class AuthViewModel {
 
         uiState = if (valid) {
             uiState.copy(
-                destination = AuthDestination.HOME,
                 loginError = false,
                 notice = "Sesión de demostración iniciada."
             )
@@ -36,7 +34,6 @@ class AuthViewModel {
 
     fun openForgotPassword() {
         uiState = uiState.copy(
-            destination = AuthDestination.FORGOT_PASSWORD,
             resetEmail = uiState.loginEmail,
             notice = ""
         )
@@ -71,7 +68,6 @@ class AuthViewModel {
 
     fun simulateOpenResetLink() {
         uiState = uiState.copy(
-            destination = AuthDestination.NEW_PASSWORD,
             newPassword = "",
             confirmPassword = "",
             notice = ""
@@ -99,7 +95,6 @@ class AuthViewModel {
 
         uiState = if (message.startsWith("Contraseña actualizada")) {
             uiState.copy(
-                destination = AuthDestination.LOGIN,
                 loginPassword = "",
                 loginError = false,
                 notice = message
@@ -111,7 +106,7 @@ class AuthViewModel {
     }
 
     fun openRegister() {
-        uiState = uiState.copy(destination = AuthDestination.REGISTER, notice = "")
+        uiState = uiState.copy( notice = "")
     }
 
     fun updateRegisterRole(isDoctor: Boolean) {
@@ -134,7 +129,6 @@ class AuthViewModel {
 
     fun backToLogin() {
         uiState = uiState.copy(
-            destination = AuthDestination.LOGIN,
             notice = "",
             loginError = false
         )
@@ -142,7 +136,6 @@ class AuthViewModel {
 
     fun logout() {
         uiState = uiState.copy(
-            destination = AuthDestination.LOGIN,
             loginPassword = "",
             loginError = false,
             notice = ""
