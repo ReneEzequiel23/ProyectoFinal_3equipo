@@ -22,7 +22,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import figueroa.rene.proyectofinal_3equipo.model.AuthDestination
 import figueroa.rene.proyectofinal_3equipo.ui.theme.ProyectoFinal_3equipoTheme
 import figueroa.rene.proyectofinal_3equipo.view.recovery.DemoHomeScreen
 import figueroa.rene.proyectofinal_3equipo.view.login.LoginScreen
@@ -32,6 +31,8 @@ import figueroa.rene.proyectofinal_3equipo.view.recovery.NewPasswordScreen
 import figueroa.rene.proyectofinal_3equipo.view.register.RegisterScreen
 import figueroa.rene.proyectofinal_3equipo.viewmodel.AuthViewModel
 import figueroa.rene.proyectofinal_3equipo.view.patient.PatientHomeScreen
+import figueroa.rene.proyectofinal_3equipo.view.patient.ScheduleAppointmentScreen
+import figueroa.rene.proyectofinal_3equipo.repository.AppointmentRepository
 
 @Composable
 fun DrCallNavHost() {
@@ -244,6 +245,19 @@ private fun DrCallNavigationGraph(
             PatientHomeScreen(
                 patientName = "María",
                 onScheduleAppointment = {
+                    navController.navigate(ScheduleAppointment)
+                }
+            )
+        }
+
+        composable<ScheduleAppointment> {
+            ScheduleAppointmentScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onAppointmentConfirmed = { appointment ->
+                    AppointmentRepository.addAppointment(appointment)
+                    navController.popBackStack()
                 }
             )
         }

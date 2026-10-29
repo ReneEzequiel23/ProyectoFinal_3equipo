@@ -50,7 +50,6 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import figueroa.rene.proyectofinal_3equipo.model.Appointment
-import figueroa.rene.proyectofinal_3equipo.dummies.sampleAppointments
 import figueroa.rene.proyectofinal_3equipo.ui.theme.BorderColor
 import figueroa.rene.proyectofinal_3equipo.ui.theme.ConfirmedColor
 import figueroa.rene.proyectofinal_3equipo.ui.theme.MainText
@@ -59,6 +58,8 @@ import figueroa.rene.proyectofinal_3equipo.ui.theme.PageBackground
 import figueroa.rene.proyectofinal_3equipo.ui.theme.PendingColor
 import figueroa.rene.proyectofinal_3equipo.ui.theme.SecondaryText
 import figueroa.rene.proyectofinal_3equipo.ui.theme.Teal
+import androidx.compose.runtime.collectAsState
+import figueroa.rene.proyectofinal_3equipo.repository.AppointmentRepository
 
 private val spanishLocale = Locale("es", "MX")
 
@@ -73,6 +74,8 @@ fun PatientHomeScreen(
     patientName: String = "María",
     onScheduleAppointment: () -> Unit = {}
 ) {
+    val appointments by AppointmentRepository.appointments.collectAsState()
+
     var selectedView by remember {
         mutableStateOf(AppointmentView.CARDS)
     }
@@ -126,7 +129,7 @@ fun PatientHomeScreen(
             Spacer(Modifier.height(20.dp))
 
             Text(
-                text = "${sampleAppointments.size} citas registradas",
+                text = "${appointments.size} citas registradas",
                 color = Color.White,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
@@ -189,7 +192,7 @@ fun PatientHomeScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     items(
-                        items = sampleAppointments,
+                        items = appointments,
                         key = { it.date.toString() + it.doctor }
                     ) { appointment ->
                         AppointmentCard(appointment)
@@ -199,12 +202,13 @@ fun PatientHomeScreen(
 
             AppointmentView.LIST -> {
                 WeeklyAppointmentList(
+                    appointments = appointments,
                     modifier = Modifier.weight(1f)
                 )
             }
-
             AppointmentView.CALENDAR -> {
                 MonthlyAppointmentCalendar(
+                    appointments = appointments,
                     displayedMonth = displayedMonth,
                     selectedDate = selectedDate,
                     onPreviousMonth = {
@@ -501,9 +505,10 @@ private fun InfoLabel(text: String) {
 
 @Composable
 private fun WeeklyAppointmentList(
+    appointments: List<Appointment>,
     modifier: Modifier = Modifier
 ) {
-    val weeks = sampleAppointments.groupBy { appointment ->
+    val weeks = appointments.groupBy { appointment ->
         appointment.date.with(
             DayOfWeek.MONDAY
         )
@@ -614,6 +619,7 @@ private fun WeeklyAppointmentList(
 
 @Composable
 private fun MonthlyAppointmentCalendar(
+    appointments: List<Appointment>,
     displayedMonth: YearMonth,
     selectedDate: LocalDate,
     onPreviousMonth: () -> Unit,
@@ -621,7 +627,7 @@ private fun MonthlyAppointmentCalendar(
     onSelectDate: (LocalDate) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val appointmentsByDate = sampleAppointments.groupBy { it.date }
+    val appointmentsByDate = appointments.groupBy { it.date }
     val firstDay = displayedMonth.atDay(1)
     val offset = firstDay.dayOfWeek.value - 1
     val totalCells = ((offset + displayedMonth.lengthOfMonth() + 6) / 7) * 7
