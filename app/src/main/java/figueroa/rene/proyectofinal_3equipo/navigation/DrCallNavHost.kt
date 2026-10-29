@@ -243,15 +243,7 @@ private fun DrCallNavigationGraph(
         composable<PatientHome> {
             PatientHomeScreen(
                 patientName = "María",
-                onProfile = {
-                },
                 onScheduleAppointment = {
-                },
-                onHistory = {
-                },
-                onAppointmentDetails = { doctor ->
-                },
-                onRateDoctor = { doctor ->
                 }
             )
         }

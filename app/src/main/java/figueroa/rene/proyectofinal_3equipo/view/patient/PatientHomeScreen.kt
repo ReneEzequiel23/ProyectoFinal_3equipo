@@ -1,10 +1,13 @@
 
 package figueroa.rene.proyectofinal_3equipo.view.patient
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,114 +22,67 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material.icons.outlined.ChevronLeft
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import figueroa.rene.proyectofinal_3equipo.model.Appointment
+import figueroa.rene.proyectofinal_3equipo.dummies.sampleAppointments
+import figueroa.rene.proyectofinal_3equipo.ui.theme.BorderColor
+import figueroa.rene.proyectofinal_3equipo.ui.theme.ConfirmedColor
+import figueroa.rene.proyectofinal_3equipo.ui.theme.MainText
+import figueroa.rene.proyectofinal_3equipo.ui.theme.Navy
+import figueroa.rene.proyectofinal_3equipo.ui.theme.PageBackground
+import figueroa.rene.proyectofinal_3equipo.ui.theme.PendingColor
+import figueroa.rene.proyectofinal_3equipo.ui.theme.SecondaryText
+import figueroa.rene.proyectofinal_3equipo.ui.theme.Teal
 
-private val Navy = Color(0xFF164F80)
-private val Teal = Color(0xFF107B91)
-private val PageBackground = Color(0xFFF5F8FC)
-private val MainText = Color(0xFF202D42)
-private val SecondaryText = Color(0xFF627795)
-private val BorderColor = Color(0xFFDCE5F0)
-private val ConfirmedColor = Color(0xFFD9F4EC)
-private val PendingColor = Color(0xFFFFEDD4)
+private val spanishLocale = Locale("es", "MX")
 
-private data class Appointment(
-    val day: String,
-    val date: String,
-    val time: String,
-    val duration: String,
-    val doctor: String,
-    val specialty: String,
-    val initials: String,
-    val type: String,
-    val price: String,
-    val status: String,
-    val location: String
-)
+private val fullDateFormatter =
+    DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", spanishLocale)
+
+private val monthFormatter =
+    DateTimeFormatter.ofPattern("MMMM yyyy", spanishLocale)
 
 @Composable
 fun PatientHomeScreen(
     patientName: String = "María",
-    onProfile: () -> Unit = {},
-    onScheduleAppointment: () -> Unit = {},
-    onHistory: () -> Unit = {},
-    onAppointmentDetails: (String) -> Unit = {},
-    onRateDoctor: (String) -> Unit = {}
+    onScheduleAppointment: () -> Unit = {}
 ) {
-    val appointments = remember {
-        listOf(
-            Appointment(
-                day = "Lun",
-                date = "19 oct",
-                time = "10:30 a.m.",
-                duration = "20 min",
-                doctor = "Dra. Mariana Valdez Ruiz",
-                specialty = "Cardiología",
-                initials = "MV",
-                type = "Cita de seguimiento",
-                price = "$500 MXN",
-                status = "Confirmada",
-                location = "Consultorio 204, Torre Médica, Calle 5 de Febrero 818, Cd. Obregón"
-            ),
-            Appointment(
-                day = "Mié",
-                date = "21 oct",
-                time = "4:00 p.m.",
-                duration = "15 min",
-                doctor = "Dr. Luis Fernando Ochoa",
-                specialty = "Dermatología",
-                initials = "LO",
-                type = "Consulta general",
-                price = "$200 MXN",
-                status = "Pendiente",
-                location = "Consulta virtual"
-            ),
-            Appointment(
-                day = "Mar",
-                date = "27 oct",
-                time = "12:15 p.m.",
-                duration = "30 min",
-                doctor = "Lic. Andrea Camacho Félix",
-                specialty = "Nutrición",
-                initials = "AC",
-                type = "Primera consulta",
-                price = "$300 MXN",
-                status = "Pendiente",
-                location = "Consulta virtual"
-            ),
-            Appointment(
-                day = "Vie",
-                date = "30 oct",
-                time = "9:00 a.m.",
-                duration = "20 min",
-                doctor = "Dr. Ricardo Peralta Soto",
-                specialty = "Medicina general",
-                initials = "RP",
-                type = "Consulta general",
-                price = "$350 MXN",
-                status = "Confirmada",
-                location = "Consultorio presencial"
-            )
-        )
+    var selectedView by remember {
+        mutableStateOf(AppointmentView.CARDS)
+    }
+
+    var displayedMonth by remember {
+        mutableStateOf(YearMonth.of(2026, 10))
+    }
+
+    var selectedDate by remember {
+        mutableStateOf(LocalDate.of(2026, 10, 27))
     }
 
     Column(
@@ -134,12 +90,13 @@ fun PatientHomeScreen(
             .fillMaxSize()
             .background(PageBackground)
     ) {
+        // Encabezado
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = Navy,
-                    shape = RoundedCornerShape(
+                    Navy,
+                    RoundedCornerShape(
                         bottomStart = 28.dp,
                         bottomEnd = 28.dp
                     )
@@ -148,170 +105,125 @@ fun PatientHomeScreen(
                     start = 24.dp,
                     end = 24.dp,
                     top = 24.dp,
-                    bottom = 24.dp
+                    bottom = 22.dp
                 )
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Hola, $patientName",
-                        fontSize = 27.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Tienes ${appointments.size} citas próximas",
-                        fontSize = 14.sp,
-                        color = Color(0xFFD8E8F5)
-                    )
-                }
+            Text(
+                text = "Hola, $patientName",
+                fontSize = 27.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
 
-                Surface(
-                    modifier = Modifier.size(48.dp),
-                    shape = CircleShape,
-                    color = Color(0xFF28648D),
-                    contentColor = Color.White,
-                    onClick = onProfile
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Outlined.PersonOutline,
-                            contentDescription = "Perfil",
-                            modifier = Modifier.size(27.dp)
-                        )
-                    }
-                }
-            }
+            Spacer(Modifier.height(5.dp))
+
+            Text(
+                text = "Consulta y organiza tus citas médicas",
+                fontSize = 14.sp,
+                color = Color(0xFFD8E8F5)
+            )
 
             Spacer(Modifier.height(20.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChipLike(text = "Fecha y hora")
-                FilterChipLike(text = "Especialidad")
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 24.dp,
-                    vertical = 20.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Próximas citas",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MainText
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "${appointments.size} citas · Todos los estados",
-                    fontSize = 12.sp,
-                    color = SecondaryText
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Outlined.CalendarMonth,
-                contentDescription = "Calendario",
-                tint = Navy,
-                modifier = Modifier.size(26.dp)
+            Text(
+                text = "${sampleAppointments.size} citas registradas",
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
             )
         }
 
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = 24.dp,
-                end = 24.dp,
-                bottom = 20.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+        Column(
+            modifier = Modifier.padding(
+                start = 20.dp,
+                end = 20.dp,
+                top = 20.dp,
+                bottom = 8.dp
+            )
         ) {
-            item {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE1F5F3)
+            Text(
+                text = "Mis citas",
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Bold,
+                color = MainText
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+                ViewOption(
+                    text = "Tarjetas",
+                    selected = selectedView == AppointmentView.CARDS,
+                    modifier = Modifier.weight(1f),
+                    onClick = { selectedView = AppointmentView.CARDS }
+                )
+
+                ViewOption(
+                    text = "Lista",
+                    selected = selectedView == AppointmentView.LIST,
+                    modifier = Modifier.weight(1f),
+                    onClick = { selectedView = AppointmentView.LIST }
+                )
+
+                ViewOption(
+                    text = "Calendario",
+                    selected = selectedView == AppointmentView.CALENDAR,
+                    modifier = Modifier.weight(1.15f),
+                    onClick = { selectedView = AppointmentView.CALENDAR }
+                )
+            }
+        }
+        when (selectedView) {
+            AppointmentView.CARDS -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(
+                        horizontal = 20.dp,
+                        vertical = 12.dp
                     ),
-                    shape = RoundedCornerShape(18.dp),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        Color(0xFF79DCD5)
-                    )
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = Color.White,
-                            modifier = Modifier.size(42.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Outlined.StarOutline,
-                                    contentDescription = null,
-                                    tint = Color(0xFFD98200)
-                                )
-                            }
-                        }
-
-                        Spacer(Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "¿Cómo te fue el 14 oct?",
-                                fontWeight = FontWeight.SemiBold,
-                                color = MainText,
-                                fontSize = 13.sp
-                            )
-                            Text(
-                                "Califica al Dr. Ricardo Peralta",
-                                color = SecondaryText,
-                                fontSize = 12.sp
-                            )
-                        }
-
-                        Button(
-                            onClick = {
-                                onRateDoctor("Dr. Ricardo Peralta Soto")
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF0F4F8),
-                                contentColor = Navy
-                            )
-                        ) {
-                            Text("Calificar")
-                        }
+                    items(
+                        items = sampleAppointments,
+                        key = { it.date.toString() + it.doctor }
+                    ) { appointment ->
+                        AppointmentCard(appointment)
                     }
                 }
             }
 
-            items(appointments) { appointment ->
-                AppointmentCard(
-                    appointment = appointment,
-                    onDetails = {
-                        onAppointmentDetails(appointment.doctor)
-                    }
+            AppointmentView.LIST -> {
+                WeeklyAppointmentList(
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            AppointmentView.CALENDAR -> {
+                MonthlyAppointmentCalendar(
+                    displayedMonth = displayedMonth,
+                    selectedDate = selectedDate,
+                    onPreviousMonth = {
+                        displayedMonth = displayedMonth.minusMonths(1)
+                        selectedDate = displayedMonth.atDay(1)
+                    },
+                    onNextMonth = {
+                        displayedMonth = displayedMonth.plusMonths(1)
+                        selectedDate = displayedMonth.atDay(1)
+                    },
+                    onSelectDate = { date ->
+                        selectedDate = date
+                    },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
 
+        // Navegación inferior: solo las funciones prioritarias
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = Color.White,
@@ -320,26 +232,26 @@ fun PatientHomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = 10.dp
-                    ),
-                horizontalArrangement = Arrangement.SpaceAround,
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        Icons.Outlined.CalendarMonth,
-                        contentDescription = "Citas",
+                        imageVector = Icons.Outlined.CalendarMonth,
+                        contentDescription = null,
                         tint = Navy
                     )
+
+                    Spacer(Modifier.width(8.dp))
+
                     Text(
-                        "Citas",
-                        fontSize = 11.sp,
+                        text = "Mis citas",
+                        color = Navy,
                         fontWeight = FontWeight.Bold,
-                        color = Navy
+                        fontSize = 13.sp
                     )
                 }
 
@@ -350,27 +262,10 @@ fun PatientHomeScreen(
                     ),
                     shape = RoundedCornerShape(28.dp)
                 ) {
-                    Text("+ Agendar", fontWeight = FontWeight.Bold)
-                }
-
-                Surface(
-                    onClick = onHistory,
-                    color = Color.Transparent
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Outlined.History,
-                            contentDescription = "Historial",
-                            tint = SecondaryText
-                        )
-                        Text(
-                            "Historial",
-                            fontSize = 11.sp,
-                            color = SecondaryText
-                        )
-                    }
+                    Text(
+                        text = "+ Agendar cita",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -378,31 +273,33 @@ fun PatientHomeScreen(
 }
 
 @Composable
-private fun FilterChipLike(text: String) {
+private fun ViewOption(
+    text: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Surface(
-        color = Color.White,
-        shape = RoundedCornerShape(24.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
+        modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) Navy else Color.White,
+        border = BorderStroke(
+            1.dp,
+            if (selected) Navy else BorderColor
+        )
     ) {
-        Row(
+        Box(
             modifier = Modifier.padding(
-                horizontal = 14.dp,
-                vertical = 11.dp
+                horizontal = 5.dp,
+                vertical = 12.dp
             ),
-            verticalAlignment = Alignment.CenterVertically
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Schedule,
-                contentDescription = null,
-                tint = Navy,
-                modifier = Modifier.size(17.dp)
-            )
-            Spacer(Modifier.width(7.dp))
             Text(
                 text = text,
+                color = if (selected) Color.White else SecondaryText,
                 fontSize = 12.sp,
-                color = MainText,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -410,23 +307,18 @@ private fun FilterChipLike(text: String) {
 
 @Composable
 private fun AppointmentCard(
-    appointment: Appointment,
-    onDetails: () -> Unit
+    appointment: Appointment
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            BorderColor
-        ),
+        border = BorderStroke(1.dp, BorderColor),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        ),
-        onClick = onDetails
+            defaultElevation = 1.dp
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -438,48 +330,27 @@ private fun AppointmentCard(
                     Icons.Outlined.CalendarMonth,
                     contentDescription = null,
                     tint = Navy,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(19.dp)
                 )
+
                 Spacer(Modifier.width(8.dp))
+
                 Text(
-                    "${appointment.day} ${appointment.date}",
-                    fontWeight = FontWeight.Bold,
+                    text = appointment.date.format(
+                        DateTimeFormatter.ofPattern(
+                            "EEE d MMM",
+                            spanishLocale
+                        )
+                    ).replaceFirstChar { it.uppercase(spanishLocale) },
                     color = MainText,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
 
-                val statusColor =
-                    if (appointment.status == "Confirmada") {
-                        ConfirmedColor
-                    } else {
-                        PendingColor
-                    }
-
-                val statusTextColor =
-                    if (appointment.status == "Confirmada") {
-                        Color(0xFF00866A)
-                    } else {
-                        Color(0xFFB85A00)
-                    }
-
-                Surface(
-                    color = statusColor,
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Text(
-                        text = appointment.status,
-                        color = statusTextColor,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(
-                            horizontal = 10.dp,
-                            vertical = 6.dp
-                        )
-                    )
-                }
+                StatusLabel(appointment.status)
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -488,7 +359,9 @@ private fun AppointmentCard(
                     tint = SecondaryText,
                     modifier = Modifier.size(17.dp)
                 )
+
                 Spacer(Modifier.width(8.dp))
+
                 Text(
                     "${appointment.time} · ${appointment.duration}",
                     color = SecondaryText,
@@ -497,9 +370,7 @@ private fun AppointmentCard(
             }
 
             Spacer(Modifier.height(14.dp))
-            androidx.compose.material3.HorizontalDivider(
-                color = BorderColor
-            )
+            HorizontalDivider(color = BorderColor)
             Spacer(Modifier.height(14.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -512,8 +383,7 @@ private fun AppointmentCard(
                         Text(
                             appointment.initials,
                             color = Teal,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -527,7 +397,9 @@ private fun AppointmentCard(
                         color = MainText,
                         fontSize = 13.sp
                     )
+
                     Spacer(Modifier.height(4.dp))
+
                     Text(
                         appointment.specialty,
                         color = SecondaryText,
@@ -541,63 +413,43 @@ private fun AppointmentCard(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Surface(
-                    color = Color(0xFFF0F4F8),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        appointment.type,
-                        color = Navy,
-                        fontSize = 11.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-
-                Surface(
-                    color = Color(0xFFF0F4F8),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        appointment.price,
-                        color = MainText,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+                InfoLabel(appointment.type)
+                InfoLabel(appointment.price)
             }
 
             Spacer(Modifier.height(12.dp))
 
             Surface(
                 color = Color(0xFFF7F9FC),
-                shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    BorderColor
-                )
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, BorderColor)
             ) {
                 Row(
-                    modifier = Modifier.padding(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        Icons.Outlined.PersonOutline,
+                        imageVector = Icons.Outlined.CalendarMonth,
                         contentDescription = null,
                         tint = Navy
                     )
+
                     Spacer(Modifier.width(10.dp))
+
                     Column {
                         Text(
-                            if (appointment.location.contains("virtual", true)) {
-                                "Virtual"
-                            } else {
-                                "Presencial"
-                            },
+                            if (appointment.location.contains(
+                                    "virtual",
+                                    ignoreCase = true
+                                )
+                            ) "Consulta virtual" else "Consulta presencial",
                             color = MainText,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 12.sp
                         )
+
                         Text(
                             appointment.location,
                             color = SecondaryText,
@@ -606,20 +458,395 @@ private fun AppointmentCard(
                     }
                 }
             }
+        }
+    }
+}
 
-            Spacer(Modifier.height(12.dp))
+@Composable
+private fun StatusLabel(status: String) {
+    val confirmed = status == "Confirmada"
 
-            Row(
+    Surface(
+        color = if (confirmed) ConfirmedColor else PendingColor,
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Text(
+            text = status,
+            color = if (confirmed) Color(0xFF00866A)
+            else Color(0xFFB85A00),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(
+                horizontal = 10.dp,
+                vertical = 6.dp
+            )
+        )
+    }
+}
+
+@Composable
+private fun InfoLabel(text: String) {
+    Surface(
+        color = Color(0xFFF0F4F8),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Text(
+            text = text,
+            color = Navy,
+            fontSize = 11.sp,
+            modifier = Modifier.padding(8.dp)
+        )
+    }
+}
+
+@Composable
+private fun WeeklyAppointmentList(
+    modifier: Modifier = Modifier
+) {
+    val weeks = sampleAppointments.groupBy { appointment ->
+        appointment.date.with(
+            DayOfWeek.MONDAY
+        )
+    }.toSortedMap()
+
+    LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(
+            horizontal = 20.dp,
+            vertical = 12.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        weeks.forEach { (weekStart, appointments) ->
+            item(key = "week-$weekStart") {
+                Text(
+                    text = "Semana del ${weekStart.format(
+                        DateTimeFormatter.ofPattern("d 'de' MMMM", spanishLocale)
+                    )}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Navy,
+                    modifier = Modifier.padding(
+                        top = 8.dp,
+                        bottom = 2.dp
+                    )
+                )
+            }
+
+            items(
+                items = appointments.sortedBy { it.date },
+                key = { "list-${it.date}-${it.doctor}" }
+            ) { appointment ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    border = BorderStroke(1.dp, BorderColor),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                appointment.date.dayOfMonth.toString(),
+                                color = Navy,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 22.sp
+                            )
+
+                            Text(
+                                appointment.date.format(
+                                    DateTimeFormatter.ofPattern("EEE", spanishLocale)
+                                ).replaceFirstChar { it.uppercase(spanishLocale) },
+                                color = SecondaryText,
+                                fontSize = 12.sp
+                            )
+                        }
+
+                        Spacer(Modifier.width(14.dp))
+                        Box(
+                            modifier = Modifier
+                                .width(3.dp)
+                                .height(62.dp)
+                                .background(
+                                    Teal,
+                                    RoundedCornerShape(4.dp)
+                                )
+                        )
+                        Spacer(Modifier.width(12.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                appointment.time,
+                                color = Navy,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp
+                            )
+
+                            Spacer(Modifier.height(4.dp))
+
+                            Text(
+                                appointment.doctor,
+                                color = MainText,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+
+                            Text(
+                                appointment.specialty,
+                                color = SecondaryText,
+                                fontSize = 12.sp
+                            )
+                        }
+
+                        StatusLabel(appointment.status)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthlyAppointmentCalendar(
+    displayedMonth: YearMonth,
+    selectedDate: LocalDate,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
+    onSelectDate: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val appointmentsByDate = sampleAppointments.groupBy { it.date }
+    val firstDay = displayedMonth.atDay(1)
+    val offset = firstDay.dayOfWeek.value - 1
+    val totalCells = ((offset + displayedMonth.lengthOfMonth() + 6) / 7) * 7
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+    ) {
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            border = BorderStroke(1.dp, BorderColor),
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Icon(
+                        Icons.Outlined.ChevronLeft,
+                        contentDescription = "Mes anterior",
+                        tint = Navy,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable(onClick = onPreviousMonth)
+                            .padding(4.dp)
+                    )
+
+                    Text(
+                        displayedMonth.format(monthFormatter)
+                            .replaceFirstChar { it.uppercase(spanishLocale) },
+                        color = MainText,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp
+                    )
+
+                    Icon(
+                        Icons.Outlined.ChevronRight,
+                        contentDescription = "Mes siguiente",
+                        tint = Navy,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable(onClick = onNextMonth)
+                            .padding(4.dp)
+                    )
+                }
+
+                Spacer(Modifier.height(18.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    listOf("L", "M", "X", "J", "V", "S", "D").forEach { day ->
+                        Text(
+                            text = day,
+                            modifier = Modifier.weight(1f),
+                            color = SecondaryText,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                for (week in 0 until totalCells / 7) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        for (dayColumn in 0..6) {
+                            val cellIndex = week * 7 + dayColumn
+                            val dayNumber = cellIndex - offset + 1
+                            val validDay = dayNumber in 1..displayedMonth.lengthOfMonth()
+
+                            if (validDay) {
+                                val date = displayedMonth.atDay(dayNumber)
+                                val hasAppointment = appointmentsByDate.containsKey(date)
+                                val selected = date == selectedDate
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 3.dp)
+                                        .size(36.dp)
+                                        .background(
+                                            color = when {
+                                                selected -> Navy
+                                                hasAppointment -> Color(0xFFDDF3F1)
+                                                else -> Color.Transparent
+                                            },
+                                            shape = CircleShape
+                                        )
+                                        .clickable {
+                                            onSelectDate(date)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = dayNumber.toString(),
+                                            color = when {
+                                                selected -> Color.White
+                                                else -> MainText
+                                            },
+                                            fontSize = 12.sp,
+                                            fontWeight = if (selected || hasAppointment) {
+                                                FontWeight.Bold
+                                            } else {
+                                                FontWeight.Normal
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 3.dp)
+                                        .size(36.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .background(
+                                Color(0xFFDDF3F1),
+                                CircleShape
+                            )
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "Día con cita",
+                        color = SecondaryText,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = selectedDate.format(fullDateFormatter)
+                .replaceFirstChar { it.uppercase(spanishLocale) },
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            color = MainText
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        val selectedAppointments = appointmentsByDate[selectedDate].orEmpty()
+
+        if (selectedAppointments.isEmpty()) {
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+                color = Color.White,
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, BorderColor)
             ) {
                 Text(
-                    "Ver detalle  ›",
-                    color = Navy,
-                    fontWeight = FontWeight.Bold,
+                    text = "No tienes citas para este día.",
+                    color = SecondaryText,
+                    modifier = Modifier.padding(18.dp),
                     fontSize = 13.sp
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f, fill = false),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(selectedAppointments) { appointment ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        border = BorderStroke(1.dp, BorderColor),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(14.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    appointment.time,
+                                    color = Navy,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                StatusLabel(appointment.status)
+                            }
+
+                            Spacer(Modifier.height(6.dp))
+
+                            Text(
+                                appointment.doctor,
+                                color = MainText,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp
+                            )
+
+                            Text(
+                                appointment.specialty,
+                                color = SecondaryText,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }
